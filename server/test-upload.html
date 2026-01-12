@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload Test - Student Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="file"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            cursor: pointer;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .response {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .response.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            display: block;
+        }
+
+        .response.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            display: block;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+
+        .info-box h3 {
+            color: #1976D2;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .info-box p {
+            color: #555;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            background: #f5f5f5;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📤 File Upload Test</h1>
+        <p class="subtitle">Student Management System - Exam & Answer Key Upload</p>
+
+        <div class="info-box">
+            <h3>ℹ️ Before You Start</h3>
+            <p>
+                You need a valid JWT token to upload files. Login as a Teacher or Admin to get your token.
+                Allowed file types: <code>PDF, DOC, DOCX, JPG, PNG</code> (Max: 10MB)
+            </p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('exam-paper')">Upload Exam Paper</button>
+            <button class="tab" onclick="switchTab('answer-key')">Upload Answer Key</button>
+        </div>
+
+        <!-- Exam Paper Upload -->
+        <div id="exam-paper" class="tab-content active">
+            <form id="examPaperForm">
+                <div class="form-group">
+                    <label for="examId1">Exam ID</label>
+                    <input type="text" id="examId1" placeholder="Enter exam ID (e.g., 507f1f77bcf86cd799439011)" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="token1">JWT Token</label>
+                    <input type="text" id="token1" placeholder="Paste your JWT token here" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="examPaper">Select Exam Paper</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="examPaper" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn">Upload Exam Paper</button>
+            </form>
+            <div id="response1" class="response"></div>
+        </div>
+
+        <!-- Answer Key Upload -->
+        <div id="answer-key" class="tab-content">
+            <form id="answerKeyForm">
+                <div class="form-group">
+                    <label for="examId2">Exam ID</label>
+                    <input type="text" id="examId2" placeholder="Enter exam ID (e.g., 507f1f77bcf86cd799439011)" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="token2">JWT Token</label>
+                    <input type="text" id="token2" placeholder="Paste your JWT token here" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="answerKey">Select Answer Key</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="answerKey" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn">Upload Answer Key</button>
+            </form>
+            <div id="response2" class="response"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        // Upload Exam Paper
+        document.getElementById('examPaperForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const examId = document.getElementById('examId1').value;
+            const token = document.getElementById('token1').value;
+            const file = document.getElementById('examPaper').files[0];
+            const responseDiv = document.getElementById('response1');
+            const submitBtn = e.target.querySelector('.btn');
+
+            if (!file) {
+                showResponse(responseDiv, 'Please select a file', 'error');
+                return;
+            }
+
+            // Validate file size
+            if (file.size > 10 * 1024 * 1024) {
+                showResponse(responseDiv, 'File size must be less than 10MB', 'error');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Uploading...';
+
+            const formData = new FormData();
+            formData.append('examPaper', file);
+
+            try {
+                const response = await fetch(`${API_URL}/exams/${examId}/upload-paper`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResponse(responseDiv, `✅ ${data.message}`, 'success');
+                    e.target.reset();
+                } else {
+                    showResponse(responseDiv, `❌ Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showResponse(responseDiv, `❌ Network error: ${error.message}`, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Upload Exam Paper';
+            }
+        });
+
+        // Upload Answer Key
+        document.getElementById('answerKeyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const examId = document.getElementById('examId2').value;
+            const token = document.getElementById('token2').value;
+            const file = document.getElementById('answerKey').files[0];
+            const responseDiv = document.getElementById('response2');
+            const submitBtn = e.target.querySelector('.btn');
+
+            if (!file) {
+                showResponse(responseDiv, 'Please select a file', 'error');
+                return;
+            }
+
+            // Validate file size
+            if (file.size > 10 * 1024 * 1024) {
+                showResponse(responseDiv, 'File size must be less than 10MB', 'error');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Uploading...';
+
+            const formData = new FormData();
+            formData.append('answerKey', file);
+
+            try {
+                const response = await fetch(`${API_URL}/exams/${examId}/upload-answer-key`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResponse(responseDiv, `✅ ${data.message}`, 'success');
+                    e.target.reset();
+                } else {
+                    showResponse(responseDiv, `❌ Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showResponse(responseDiv, `❌ Network error: ${error.message}`, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Upload Answer Key';
+            }
+        });
+
+        function showResponse(element, message, type) {
+            element.textContent = message;
+            element.className = `response ${type}`;
+            
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
