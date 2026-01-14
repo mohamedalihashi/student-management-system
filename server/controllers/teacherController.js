@@ -98,10 +98,24 @@ const getMyClasses = async (req, res) => {
     }
 };
 
+// @desc    Get current teacher profile
+// @route   GET /api/teachers/me
+// @access  Private/Teacher
+const getMe = async (req, res) => {
+    try {
+        const teacher = await Teacher.findOne({ user: req.user._id }).populate('user', 'email');
+        if (!teacher) return res.status(404).json({ message: 'Teacher profile not found' });
+        res.json(teacher);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     updateTeacherProfile,
     getAllTeachers,
     getTeacherById,
     deleteTeacher,
-    getMyClasses
+    getMyClasses,
+    getMe
 };

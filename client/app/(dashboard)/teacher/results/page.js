@@ -90,20 +90,27 @@ export default function ResultsEntry() {
 
         try {
             setSaving(true);
-            const promises = Object.entries(resultsData).map(([studentId, data]) => {
-                if (data.marksObtained === '') return null;
-                return api.post('/results', {
+            const resultsToSave = Object.entries(resultsData).map(([studentId, data]) => {
+                if (data.marksObtained === '' || data.marksObtained === undefined) return null;
+                return {
                     examId: selectedExam,
                     studentId,
                     subjectId: selectedSubject,
                     marksObtained: Number(data.marksObtained),
                     totalMarks: Number(data.totalMarks)
-                });
-            }).filter(p => p !== null);
+                };
+            }).filter(r => r !== null);
 
-            await Promise.all(promises);
+            if (resultsToSave.length === 0) {
+                alert('No marks entered to save.');
+                setSaving(false);
+                return;
+            }
+
+            await api.post('/results/bulk', { results: resultsToSave });
             alert('Results saved successfully!');
         } catch (error) {
+            console.error('Error saving results:', error);
             alert('Error saving results');
         } finally {
             setSaving(false);

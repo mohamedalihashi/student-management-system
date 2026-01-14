@@ -31,6 +31,48 @@ const addResult = async (req, res) => {
     }
 };
 
+// @desc    Bulk Add Results
+// @route   POST /api/results/bulk
+// @access  Private/Teacher/Admin
+const bulkAddResults = async (req, res) => {
+    const { results } = req.body; // Array of { examId, studentId, subjectId, marksObtained, totalMarks }
+
+    try {
+        const operations = results.map(result => {
+            const percentage = (result.marksObtained / result.totalMarks) * 100;
+            let grade = 'F';
+            if (percentage >= 90) grade = 'A+';
+            else if (percentage >= 80) grade = 'A';
+            else if (percentage >= 70) grade = 'B';
+            else if (percentage >= 60) grade = 'C';
+            else if (percentage >= 50) grade = 'D';
+
+            return {
+                updateOne: {
+                    filter: {
+                        exam: result.examId,
+                        student: result.studentId,
+                        subject: result.subjectId
+                    },
+                    update: {
+                        $set: {
+                            marksObtained: result.marksObtained,
+                            totalMarks: result.totalMarks,
+                            grade
+                        }
+                    },
+                    upsert: true
+                }
+            };
+        });
+
+        await Result.bulkWrite(operations);
+        res.status(201).json({ message: 'Results saved successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 // @desc    Get Results for Student (Report Card)
 // @route   GET /api/results/student/:studentId
 // @access  Private
@@ -88,6 +130,7 @@ const getAllResults = async (req, res) => {
 
 module.exports = {
     addResult,
+    bulkAddResults,
     getStudentResults,
     updateResult,
     deleteResult,

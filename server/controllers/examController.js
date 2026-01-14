@@ -88,6 +88,8 @@ const uploadAnswerKey = async (req, res) => {
     }
 };
 
+const Teacher = require('../models/Teacher'); // Ensure Teacher model is loaded
+
 // @desc    Approve Exam
 // @route   PUT /api/exams/:id/approve
 // @access  Private/Admin
@@ -99,6 +101,20 @@ const approveExam = async (req, res) => {
             return res.status(404).json({ message: 'Exam not found' });
         }
 
+        // Auto-repair: Check if teacher link is valid (it might be a User ID from earlier bug)
+        // If populate fails effectively or we cant find the teacher doc by ID, try finding it by User ID
+        const teacherExists = await Teacher.findById(exam.teacher);
+        if (!teacherExists) {
+            console.log(`Exam ${exam._id} has invalid Teacher ID ${exam.teacher}. Checking if it's a User ID...`);
+            const teacherProfile = await Teacher.findOne({ user: exam.teacher });
+            if (teacherProfile) {
+                console.log(`Auto-repairing: Found Teacher profile ${teacherProfile._id} for User ${exam.teacher}`);
+                exam.teacher = teacherProfile._id;
+            } else {
+                console.warn(`Could not auto-repair exam teacher link. Teacher might be missing.`);
+            }
+        }
+
         exam.status = 'approved';
         exam.approvedBy = req.user._id;
         exam.approvedAt = Date.now();
@@ -107,7 +123,8 @@ const approveExam = async (req, res) => {
         await exam.populate(['class', 'subject', 'teacher', 'approvedBy']);
         res.json({ message: 'Exam approved successfully', exam });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Approve Exam Error:', error);
+        res.status(500).json({ message: error.message || 'Server Error' });
     }
 };
 

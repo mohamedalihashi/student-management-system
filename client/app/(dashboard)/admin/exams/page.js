@@ -56,7 +56,7 @@ export default function AdminExamManagement() {
             const [classRes, subjectRes, teacherRes] = await Promise.all([
                 api.get('/classes'),
                 api.get('/subjects'),
-                api.get('/users?role=teacher') // Updated to use query param
+                api.get('/teachers') // Fetch actual Teacher profiles
             ]);
             setClasses(classRes.data);
             setSubjects(subjectRes.data);
@@ -108,7 +108,8 @@ export default function AdminExamManagement() {
                 await api.put(`/exams/${examId}/approve`);
                 fetchExams();
             } catch (error) {
-                alert('Error approving exam');
+                console.error('Approve error:', error);
+                alert(error.response?.data?.message || 'Error approving exam');
             }
         }
     };
@@ -389,7 +390,9 @@ export default function AdminExamManagement() {
                                     >
                                         <option value="">Select Teacher</option>
                                         {teachers.map(t => (
-                                            <option key={t._id} value={t._id}>{t.email} ({t.name || 'No Profile'})</option>
+                                            <option key={t._id} value={t._id}>
+                                                {t.name} ({t.user?.email || 'No Email'})
+                                            </option>
                                         ))}
                                     </select>
                                 </div>

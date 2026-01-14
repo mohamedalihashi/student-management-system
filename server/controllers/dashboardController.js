@@ -56,6 +56,13 @@ const getDashboardStats = async (req, res) => {
                     documents: 0, // Placeholder
                     feeStatus: fee ? fee.status : 'N/A',
                 };
+            } else {
+                stats = {
+                    attendance: "0%",
+                    gpa: "0.00",
+                    documents: 0,
+                    feeStatus: "N/A",
+                };
             }
         } else if (role === 'parent') {
             const parent = await Parent.findOne({ user: userId }).populate('children');

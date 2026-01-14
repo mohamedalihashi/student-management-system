@@ -19,16 +19,33 @@ export default function StudentDashboard() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [statsRes, studentRes] = await Promise.all([
-                    api.get('/dashboard'),
-                    api.get('/students/me')
-                ]);
-                setStats(statsRes.data);
+                // Fetch stats independent of student profile if possible, 
+                // but dashboard stats for student currently depend on student profile existence in backend too.
+                // However, let's try to fetch them.
 
-                const resultsRes = await api.get(`/results/student/${studentRes.data._id}`);
-                setResults(resultsRes.data.slice(0, 5)); // Get last 5 results
+                try {
+                    const statsRes = await api.get('/dashboard');
+                    setStats(statsRes.data);
+                } catch (err) {
+                    console.error('Error fetching dashboard stats', err);
+                }
+
+                const studentRes = await api.get('/students/me');
+
+                if (studentRes.data) {
+                    try {
+                        const resultsRes = await api.get(`/results/student/${studentRes.data._id}`);
+                        setResults(resultsRes.data.slice(0, 5));
+                    } catch (err) {
+                        console.error('Error fetching results', err);
+                    }
+                }
             } catch (error) {
                 console.error('Error fetching student data:', error);
+                // If 404 for student profile, it means user exists but student record doesn't
+                if (error.response?.status === 404) {
+                    // logic to handle missing profile could go here, e.g. set a flag
+                }
             } finally {
                 setLoading(false);
             }
@@ -111,6 +128,13 @@ export default function StudentDashboard() {
                     <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl">
                         <h2 className="text-xl font-semibold text-white mb-6">Quick Links</h2>
                         <div className="space-y-3">
+                            <Link href="/student/profile" className="block w-full p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-white font-medium flex items-center justify-between group">
+                                <div className="flex items-center gap-3">
+                                    <Trophy className="w-5 h-5 text-blue-400" />
+                                    My Profile
+                                </div>
+                                <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all" />
+                            </Link>
                             <Link href="/student/attendance" className="block w-full p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-white font-medium flex items-center justify-between group">
                                 <div className="flex items-center gap-3">
                                     <Calendar className="w-5 h-5 text-green-400" />

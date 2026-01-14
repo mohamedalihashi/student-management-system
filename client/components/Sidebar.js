@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import {
     LayoutDashboard,
+    User,
     Users,
     BookOpen,
     Calendar,
@@ -42,10 +43,12 @@ const Sidebar = () => {
             { name: 'Dashboard', icon: LayoutDashboard, path: '/teacher' },
             { name: 'Attendance', icon: Calendar, path: '/teacher/attendance' },
             { name: 'Results Entry', icon: FileText, path: '/teacher/results' },
+            { name: 'Exams', icon: FileText, path: '/teacher/exams' },
             { name: 'Subjects', icon: BookOpen, path: '/teacher/subjects' },
         ],
         student: [
             { name: 'Dashboard', icon: LayoutDashboard, path: '/student' },
+            { name: 'My Profile', icon: User, path: '/student/profile' },
             { name: 'My Attendance', icon: Calendar, path: '/student/attendance' },
             { name: 'My Results', icon: FileText, path: '/student/results' },
             { name: 'Fee Status', icon: CreditCard, path: '/student/fees' },
